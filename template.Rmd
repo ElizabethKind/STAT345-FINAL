@@ -10,13 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Section One
 ```{r}
-
+# Word docx in repository
 ```
 
 
 ## Section Two
 ```{r}
-
 dice_1 <- function() {
   sample(1:6, 1)
 }
@@ -67,26 +66,6 @@ ggplot(prop_freq1, aes(x = property, y = frequency)) +
 ```
 
 ## Section Three
-```{r}
-roll_die <- function(){
-  double_count <- 0
-  
-  repeat {
-    dice_1 <- sample(1:6, 1)
-    dice_2 <- sample(1:6, 1)
-    
-    if(dice_1 == dice_2){
-      double_count <- double_count + 1
-      
-      if(double_count == 3){
-        #go to jail
-      }
-    } else {
-      # next turn
-    }
-  }
-}
-```
 ```{r}
 property_sum_10games_jail <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
@@ -171,9 +150,7 @@ for (game in 1:10) {
 }  
 
 names(property_sum_10games_jail) <- c("Mediterranean Avenue", "Baltic Avenue", "Reading Railroad", "Oriental Avenue", "Vermont Avenue", "Connecticut Avenue", "St. Charles Place", "Electric Company", "States Avenue", "Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Tennessee Avenue", "New York Avenue", "Kentucky Avenue", "Indiana Avenue", "Illinois Avenue", "B&O Railroad", "Atlantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "Pacific Avenue", "North Carolina Avenue", "Pennsylvania Avenue", "Short Line", "Park Place", "Boardwalk")
-```
 
-```{r}
 library(ggplot2)
 
 prop_freq2 <- data.frame(
@@ -182,7 +159,7 @@ prop_freq2 <- data.frame(
 )
 
 ggplot(prop_freq2, aes(x = property, y = frequency)) +
-  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_bar(stat = "identity", fill = "pink") +
   labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail and Doubles Conditions") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
