@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Section One
-```{r student1}
+```{r}
 
 ```
 
@@ -67,7 +67,7 @@ ggplot(prop_freq1, aes(x = property, y = frequency)) +
 ```
 
 ## Section Three
-```{r student3}
+```{r}
 roll_die <- function(){
   double_count <- 0
   
@@ -91,6 +91,15 @@ roll_die <- function(){
 
 
 ## Section Four
-```{r student4}
+```{r}
 
 ```
+
+## Section Five
+```{r}
+
+
+```
+
+
+
