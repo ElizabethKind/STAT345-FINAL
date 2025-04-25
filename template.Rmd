@@ -16,7 +16,57 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Section Two
 ```{r student2}
+dice_1 <- function() {
+  sample(1:6, 1)
+}
 
+dice_2 <- function() {
+  sample(1:6, 1)
+}
+```
+
+```{r student2}
+property_sum_10games <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+for (game in 1:10) {
+  game_board <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+  players <- list(
+    player1 <- 0,
+    player2 <- 0,
+    player3 <- 0,
+    player4 <- 0
+  )
+
+  for (i in 1:50) {
+    for (j in 1:4) {
+      dice_total <- dice_1() + dice_2()
+      players[[j]] <- (players[[j]] + dice_total) %% 41
+      game_board[players[[j]]] <- game_board[players[[j]]] + 1
+    }
+  }
+
+  properties <- game_board[c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 38, 40)]
+  
+  property_sum_10games <- property_sum_10games + properties
+}  
+
+names(property_sum_10games) <- c("Mediterranean Avenue", "Baltic Avenue", "Reading Railroad", "Oriental Avenue", "Vermont Avenue", "Connecticut Avenue", "St. Charles Place", "Electric Company", "States Avenue", "Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Tennessee Avenue", "New York Avenue", "Kentucky Avenue", "Indiana Avenue", "Illinois Avenue", "B&O Railroad", "Atlantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "Pacific Avenue", "North Carolina Avenue", "Pennsylvania Avenue", "Short Line", "Park Place", "Boardwalk")
+```
+
+```{r student2}
+library(ggplot2)
+
+prop_freq1 <- data.frame(
+  property = factor(names(property_sum_10games), levels = names(property_sum_10games)),
+  frequency = property_sum_10games
+)
+
+ggplot(prop_freq1, aes(x = property, y = frequency)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ## Section Three
