@@ -87,7 +87,106 @@ roll_die <- function(){
   }
 }
 ```
+```{r student3}
+property_sum_10games_jail <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
+for (game in 1:10) {
+  game_board <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+  players <- list(
+    player1 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0),
+    player2 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0),
+    player3 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0),
+    player4 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0)
+  )
+
+  for (i in 1:50) {
+    for (j in 1:4) {
+      if (players[[j]]$jail == TRUE) {
+        d1 = dice_1()
+        d2 = dice_2()
+        jail_rolls <- jail_rolls + 1
+        
+        if (d1 == d2 || players[[j]]$jail_rolls == 3) {
+          jail = FALSE
+          players[[j]]$jail_rolls <- 0
+          dice_total <- dice_1() + dice_2()
+          players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+          game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+        }
+        
+      } else {
+        d1 = dice_1()
+        d2 = dice_2()
+        dice_total <- dice_1() + dice_2()
+        players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+        game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+        
+        if (players[[j]]$location == 31) {
+          players[[j]]$location <- 11
+          jail = TRUE
+        } else if (d1 == d2) {
+          players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+        }
+        
+        while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) {
+          d1 = dice_1()
+          d2 = dice_2()
+          dice_total <- dice_1() + dice_2()
+          players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+          game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+          
+          if (d1 == d2) {
+            players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+          }
+        }
+        
+        if (players[[j]]$double_rolls == 3) {
+          players[[j]]$location <- 11
+          jail = TRUE
+        }
+      }
+    }  
+  }    
+
+  properties <- game_board[c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 38, 40)]
+  
+  property_sum_10games_jail <- property_sum_10games_jail + properties
+}  
+
+names(property_sum_10games_jail) <- c("Mediterranean Avenue", "Baltic Avenue", "Reading Railroad", "Oriental Avenue", "Vermont Avenue", "Connecticut Avenue", "St. Charles Place", "Electric Company", "States Avenue", "Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Tennessee Avenue", "New York Avenue", "Kentucky Avenue", "Indiana Avenue", "Illinois Avenue", "B&O Railroad", "Atlantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "Pacific Avenue", "North Carolina Avenue", "Pennsylvania Avenue", "Short Line", "Park Place", "Boardwalk")
+```
+
+```{r}
+library(ggplot2)
+
+prop_freq2 <- data.frame(
+  property = factor(names(property_sum_10games_jail), levels = names(property_sum_10games_jail)),
+  frequency = property_sum_10games_jail
+)
+
+ggplot(prop_freq2, aes(x = property, y = frequency)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail and Doubles Conditions") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
 
 
 ## Section Four
