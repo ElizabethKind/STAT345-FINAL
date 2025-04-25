@@ -93,12 +93,12 @@ property_sum_10games_jail <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 for (game in 1:10) {
   game_board <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-  players <- list(
+  players <- list( # Store players as a list of data frames with their information
     player1 <- data.frame(
-      location = 0,
-      double_rolls = 0,
-      jail = FALSE,
-      jail_rolls = 0),
+      location = 0, # Location on the board (integer)
+      double_rolls = 0, # Number of times doubles have been rolled consecutively (integer)
+      jail = FALSE, # Is the player in jail? (boolean)
+      jail_rolls = 0), # Number of times a player has rolled while in jail (integer)
     player2 <- data.frame(
       location = 0,
       double_rolls = 0,
@@ -116,14 +116,14 @@ for (game in 1:10) {
       jail_rolls = 0)
   )
 
-  for (i in 1:50) {
-    for (j in 1:4) {
-      if (players[[j]]$jail == TRUE) {
+  for (i in 1:50) { # Each player has 50 turns
+    for (j in 1:4) { # Players take turns in order
+      if (players[[j]]$jail == TRUE) { # If the player is in jail...
         d1 = dice_1()
         d2 = dice_2()
         jail_rolls <- jail_rolls + 1
         
-        if (d1 == d2 || players[[j]]$jail_rolls == 3) {
+        if (d1 == d2 || players[[j]]$jail_rolls == 3) { # If the player rolls doubles or has been in jail for 3 turns, then they get out
           jail = FALSE
           players[[j]]$jail_rolls <- 0
           dice_total <- dice_1() + dice_2()
@@ -131,33 +131,33 @@ for (game in 1:10) {
           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
         }
         
-      } else {
+      } else { # If the player is not in jail...
         d1 = dice_1()
         d2 = dice_2()
         dice_total <- dice_1() + dice_2()
         players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
         game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
         
-        if (players[[j]]$location == 31) {
+        if (players[[j]]$location == 31) { # Player landed on "Go to jail"
           players[[j]]$location <- 11
           jail = TRUE
-        } else if (d1 == d2) {
+        } else if (d1 == d2) { # Player rolled doubles on their first roll
           players[[j]]$double_rolls = players[[j]]$double_rolls + 1
         }
         
-        while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) {
+        while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) { # Player rolls again if they got doubles
           d1 = dice_1()
           d2 = dice_2()
           dice_total <- dice_1() + dice_2()
           players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
           
-          if (d1 == d2) {
+          if (d1 == d2) { # Increment the player's number of consecutive doubles rolls
             players[[j]]$double_rolls = players[[j]]$double_rolls + 1
           }
         }
         
-        if (players[[j]]$double_rolls == 3) {
+        if (players[[j]]$double_rolls == 3) { # If player rolls double 3 times in a row, then they go to jail
           players[[j]]$location <- 11
           jail = TRUE
         }
