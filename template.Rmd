@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Section Two
 ```{r}
+
 dice_1 <- function() {
   sample(1:6, 1)
 }
@@ -67,7 +68,24 @@ ggplot(prop_freq1, aes(x = property, y = frequency)) +
 
 ## Section Three
 ```{r student3}
-
+roll_die <- function(){
+  double_count <- 0
+  
+  repeat {
+    dice_1 <- sample(1:6, 1)
+    dice_2 <- sample(1:6, 1)
+    
+    if(dice_1 == dice_2){
+      double_count <- double_count + 1
+      
+      if(double_count == 3){
+        #go to jail
+      }
+    } else {
+      # next turn
+    }
+  }
+}
 ```
 
 
