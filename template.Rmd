@@ -87,7 +87,7 @@ roll_die <- function(){
   }
 }
 ```
-```{r student3}
+```{r}
 property_sum_10games_jail <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 for (game in 1:10) {
