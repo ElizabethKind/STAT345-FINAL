@@ -188,7 +188,151 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
   # You have been elected Chairman of the Board. Pay each player $50.
   # Your building loan matures. Collect $150
 
+# Chance function
+chance <- function() {
+  card <- sample(1:16, 1)
+  if (card == 1) {
+    players[[j]]$location <- 40 # Advance to Boardwalk
+  } else if (card == 2) {
+    players[[j]]$location <- 1 # Advance to Go
+  } else if (card == 3) {
+    players[[j]]$location <- 25 # Advance to Illinois Ave
+  } else if (card == 4) {
+    players[[j]]$location <- 12 # Advance to St. Charles Place
+  } else if (card == 5 || card == 6) { # Advance to the nearest railroad
+    if (players[[j]]$location == 37) {
+      players[[j]]$location <- 6 # Advance to Reading Railroad
+    } else if (players[[j]]$location == 8) {
+      players[[j]]$location <- 16 # Advance to Pennsylvania Railroad
+    } else if (players[[j]]$location == 23) {
+      players[[j]]$location <- 26 # Advance to B&O Railroad
+    } 
+  } else if (card == 7) { # Advance to the nearest utility
+    if (players[[j]]$location == 8 || players[[j]]$location == 37) {
+      players[[j]]$location <- 13 # Advance to Electric Company
+    } else if (players[[j]]$location == 23) {
+      players[[j]]$location <- 29 # Advance to Water Works
+    }
+  } else if (card == 10) {
+    players[[j]]$location <- players[[j]]$location - 3 # Move backwards 3 places
+  } else if (card == 11) {
+    players[[j]]$location <- 11 # Go to jail
+    players[[j]]$jail == TRUE
+  } else if (card == 14) {
+    players[[j]]$location <- 6 # Advance to Reading Railroad
+  } 
+}
 
+# Simulation with the chance function and jail conditions
+property_sum_10games_chance <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+for (game in 1:10) {
+  game_board <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+  players <- list(
+    player1 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0),
+    player2 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0),
+    player3 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0),
+    player4 <- data.frame(
+      location = 0,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0)
+  )
+
+  for (i in 1:50) {
+    for (j in 1:4) {
+      if (players[[j]]$jail == TRUE) {
+        d1 = dice_1()
+        d2 = dice_2()
+        jail_rolls <- jail_rolls + 1
+        
+        if (d1 == d2 || players[[j]]$jail_rolls == 3) {
+          jail = FALSE
+          players[[j]]$jail_rolls <- 0
+          dice_total <- dice_1() + dice_2()
+          players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+          if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
+            game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+            chance()
+          }
+          game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+        }
+        
+      } else {
+        d1 = dice_1()
+        d2 = dice_2()
+        dice_total <- dice_1() + dice_2()
+        players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+        if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
+            game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+            chance()
+          }
+        game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+        
+        if (players[[j]]$location == 31) {
+          players[[j]]$location <- 11
+          jail = TRUE
+        } else if (d1 == d2) {
+          players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+        }
+        
+        while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) {
+          d1 = dice_1()
+          d2 = dice_2()
+          dice_total <- dice_1() + dice_2()
+          players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+          if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
+            game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+            chance()
+          }
+          game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+          
+          if (d1 == d2) {
+            players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+          }
+        }
+        
+        if (players[[j]]$double_rolls == 3) {
+          players[[j]]$location <- 11
+          jail = TRUE
+        }
+      }
+    }  
+  }    
+
+  properties <- game_board[c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 38, 40)]
+  
+  property_sum_10games_chance <- property_sum_10games_chance + properties
+}  
+
+names(property_sum_10games_chance) <- c("Mediterranean Avenue", "Baltic Avenue", "Reading Railroad", "Oriental Avenue", "Vermont Avenue", "Connecticut Avenue", "St. Charles Place", "Electric Company", "States Avenue", "Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Tennessee Avenue", "New York Avenue", "Kentucky Avenue", "Indiana Avenue", "Illinois Avenue", "B&O Railroad", "Atlantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "Pacific Avenue", "North Carolina Avenue", "Pennsylvania Avenue", "Short Line", "Park Place", "Boardwalk")
+
+# Plot
+library(ggplot2)
+
+prop_freq2 <- data.frame(
+  property = factor(names(property_sum_10games_chance), levels = names(property_sum_10games_chance)),
+  frequency = property_sum_10games_chance
+)
+
+ggplot(prop_freq2, aes(x = property, y = frequency)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail and Doubles Conditions") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ## Section Five
