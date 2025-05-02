@@ -206,7 +206,7 @@ chance <- function() {
       players[[j]]$location <- 16 # Advance to Pennsylvania Railroad
     } else if (players[[j]]$location == 23) {
       players[[j]]$location <- 26 # Advance to B&O Railroad
-    } 
+    } # Short Line doesn't apply here
   } else if (card == 7) { # Advance to the nearest utility
     if (players[[j]]$location == 8 || players[[j]]$location == 37) {
       players[[j]]$location <- 13 # Advance to Electric Company
