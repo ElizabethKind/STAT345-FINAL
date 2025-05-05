@@ -398,7 +398,7 @@ chance <- function() {
       players[[j]]$money <- players[[j]]$money + 50 # Bank pays you $50
     }
     else if (card == 12) {
-      players[[j]]$get_out_jail == TRUE # Get out of jail free card
+      players[[j]]$get_out_of_jail_free == TRUE # Get out of jail free card
     }
     else if (card == 13) {
       players[[j]]$money <- players[[j]]$money - 15 # Speeding fine $15
@@ -434,15 +434,18 @@ chest <- function() {
     } else if (chest_card == 4) {
       players[[j]]$money <- players[[j]]$money + 50
     } else if (chest_card == 5) {
-      players[[j]]$jail_free_card = TRUE
+      players[[j]]$get_out_of_jail_free == TRUE
     } else if (chest_card == 6) {
-      players[[j]]$jail <- TRUE
+      players[[j]]$jail == TRUE
     } else if (chest_card == 7) {
       players[[j]]$money <- players[[j]]$money + 100
     } else if (chest_card == 8) {
       players[[j]]$money <- players[[j]]$money + 20
     } else if (chest_card == 9) {
-      players[[j]]$money <- players[[j]]$money + 10*players[[j]]
+      players[[j]]$money <- players[[j]]$money + 10 * (length(players) - 1)
+        for (k in 1:length(players)) {
+          if (k != j) {
+            players[[k]]$money <- players[[k]]$money - 10
     } else if (chest_card == 10) {
       players[[j]]$money <- players[[j]]$money + 100
     } else if (chest_card == 11) {
