@@ -183,7 +183,7 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
 # Chance (Non-Movement Cards):
   # Bank pays you dividend of $50.
   # Get Out of Jail Free.
-  # Make general repairs on all your property. For each house pay $25. For each hotel pay $100.
+  # Make general repairs on all your property. For each house pay $25. For each hotel pay $100. (doesn't apply here)
   # Speeding fine $15.
   # You have been elected Chairman of the Board. Pay each player $50.
   # Your building loan matures. Collect $150
@@ -353,9 +353,9 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
   # 11. Pay hospital fees of $100
   # 12. Pay school fees of $50
   # 13. Receive $25 consultancy fee
-  # 14. You are assessed for street repair. $40 per house. $115 per hotel
-  # 15. You have won second prize in a beauty contest. Collect $10
-  # 16. You inherit $100
+  # 14. You have won second prize in a beauty contest. Collect $10
+  # 15. You inherit $100
+  # 16. You are assessed for street repair. $40 per house. $115 per hotel (doesn't apply here)
 
 # Simulation with the Chance function
 chance <- function() {
