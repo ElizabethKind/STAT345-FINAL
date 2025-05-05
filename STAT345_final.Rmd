@@ -422,6 +422,8 @@ chest <- function() {
         for (k in 1:length(players)) {
           if (k != j) {
             players[[k]]$money <- players[[k]]$money - 10
+        }
+      }
     } else if (chest_card == 10) {
       players[[j]]$money <- players[[j]]$money + 100 # Life insurance matures. Collect $100
     } else if (chest_card == 11) {
