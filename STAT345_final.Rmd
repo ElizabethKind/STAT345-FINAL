@@ -189,10 +189,8 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
   # Your building loan matures. Collect $150
 
 # Chance function
-chance_positions <- c(8, 23, 37)
 chance <- function() {
   card <- sample(1:16, 1)
-if (players[[j]]$location %in% chance_positions) {
   if (card == 1) {
     players[[j]]$location <- 40 # Advance to Boardwalk
   } else if (card == 2) {
@@ -224,7 +222,7 @@ if (players[[j]]$location %in% chance_positions) {
     players[[j]]$location <- 6 # Advance to Reading Railroad
   } 
  }
-}
+
 # Simulation with the chance function and jail conditions
 property_sum_10games_chance <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
