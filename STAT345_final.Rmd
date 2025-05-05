@@ -360,37 +360,51 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
 # Simulation with the Chance function
 chance <- function() {
   card <- sample(1:16, 1)
+  old_location <- players[[j]]$location
+   if (card == 1) {
     players[[j]]$location <- 40 # Advance to Boardwalk
+    new_location <- players[[j]]$location
   } else if (card == 2) {
     players[[j]]$location <- 1 # Advance to Go
+    new_location <- players[[j]]$location
   } else if (card == 3) {
     players[[j]]$location <- 25 # Advance to Illinois Ave
+    new_location <- players[[j]]$location
   } else if (card == 4) {
     players[[j]]$location <- 12 # Advance to St. Charles Place
+    new_location <- players[[j]]$location
   } else if (card == 5 || card == 6) { # Advance to the nearest railroad
     if (players[[j]]$location == 37) {
       players[[j]]$location <- 6 # Advance to Reading Railroad
+      new_location <- players[[j]]$location
     } else if (players[[j]]$location == 8) {
       players[[j]]$location <- 16 # Advance to Pennsylvania Railroad
+      new_location <- players[[j]]$location
     } else if (players[[j]]$location == 23) {
       players[[j]]$location <- 26 # Advance to B&O Railroad
+      new_location <- players[[j]]$location
     } 
   } else if (card == 7) { # Advance to the nearest utility
     if (players[[j]]$location == 8 || players[[j]]$location == 37) {
       players[[j]]$location <- 13 # Advance to Electric Company
+      new_location <- players[[j]]$location
     } else if (players[[j]]$location == 23) {
       players[[j]]$location <- 29 # Advance to Water Works
+      new_location <- players[[j]]$location
     }
   } else if (card == 8) {
     players[[j]]$location <- players[[j]]$location - 3 # Move backwards 3 places
+    new_location <- players[[j]]$location
   } else if (card == 9) {
     players[[j]]$location <- 11 # Go to jail
     players[[j]]$jail == TRUE
+    new_location <- players[[j]]$location
   } else if (card == 10) {
     players[[j]]$location <- 6 # Advance to Reading Railroad
+    new_location <- players[[j]]$location
   } 
 
-  if (players[[j]]$location < players[[j]]$location && card %in% c(3,4,10)) {
+  if (new_location < old_location && card %in% c(3,4,10)) {
     players[[j]]$money <- players[[j]]$money + 200 # Passing Go for cards 3, 4, and 10
   }
   
