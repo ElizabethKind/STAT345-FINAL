@@ -430,6 +430,7 @@ chest <- function() {
   if (players[[j]]$location %in% chest_positions) {
     if (chest_card == 1) {
       players[[j]]$location <- 1
+      players[[j]]$money <- players[[j]]$money + 200
     } else if (chest_card == 2) {
       players[[j]]$money <- players[[j]]$money + 200
     } else if (chest_card == 3) {
@@ -437,7 +438,7 @@ chest <- function() {
     } else if (chest_card == 4) {
       players[[j]]$money <- players[[j]]$money + 50
     } else if (chest_card == 5) {
-      players[[j]]$jail_free_card <- TRUE
+      players[[j]]$jail_free_card = TRUE
     } else if (chest_card == 6) {
       players[[j]]$jail <- TRUE
     } else if (chest_card == 7) {
