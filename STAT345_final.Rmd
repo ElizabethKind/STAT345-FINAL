@@ -402,7 +402,7 @@ chance <- function() {
     }
     else if (card == 13) {
       players[[j]]$money <- players[[j]]$money - 15 # Speeding fine $15
-      properties_info$free_parking <- properties_info$free_parking + 15
+      property_info$free_parking <- property_info$free_parking + 15
     }
     else if (card == 14) {
       players[[j]]$money <- players[[j]]$money - 50 * (length(players) - 1)
