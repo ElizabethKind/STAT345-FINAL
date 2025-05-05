@@ -358,11 +358,8 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
   # 16. You inherit $100
 
 # Simulation with the Chance function
-chance_positions <- c(8, 23, 37)
 chance <- function() {
   card <- sample(1:16, 1)
- if (players[[j]]$location %in% chance_positions) {
-   if (card == 1) {
     players[[j]]$location <- 40 # Advance to Boardwalk
   } else if (card == 2) {
     players[[j]]$location <- 1 # Advance to Go
@@ -420,7 +417,6 @@ chance <- function() {
       
       # Card 16 is paying for houses and hotels -- doesn't apply here
     }
-}
 }
 
 # Community Chest Cards Function
