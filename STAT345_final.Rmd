@@ -359,6 +359,7 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
 chance <- function() {
   card <- sample(1:16, 1)
   old_location <- players[[j]]$location
+  new_location <- players[[j]]$location
    if (card == 1) {
     players[[j]]$location <- 40 # Advance to Boardwalk
     new_location <- players[[j]]$location
