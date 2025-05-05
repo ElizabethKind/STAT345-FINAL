@@ -357,6 +357,72 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
   # 15. You have won second prize in a beauty contest. Collect $10
   # 16. You inherit $100
 
+# Simulation with the Chance function
+chance_positions <- c(8, 23, 37)
+chance <- function() {
+  card <- sample(1:16, 1)
+ if (players[[j]]$location %in% chance_positions) {
+   if (card == 1) {
+    players[[j]]$location <- 40 # Advance to Boardwalk
+  } else if (card == 2) {
+    players[[j]]$location <- 1 # Advance to Go
+  } else if (card == 3) {
+    players[[j]]$location <- 25 # Advance to Illinois Ave
+  } else if (card == 4) {
+    players[[j]]$location <- 12 # Advance to St. Charles Place
+  } else if (card == 5 || card == 6) { # Advance to the nearest railroad
+    if (players[[j]]$location == 37) {
+      players[[j]]$location <- 6 # Advance to Reading Railroad
+    } else if (players[[j]]$location == 8) {
+      players[[j]]$location <- 16 # Advance to Pennsylvania Railroad
+    } else if (players[[j]]$location == 23) {
+      players[[j]]$location <- 26 # Advance to B&O Railroad
+    } 
+  } else if (card == 7) { # Advance to the nearest utility
+    if (players[[j]]$location == 8 || players[[j]]$location == 37) {
+      players[[j]]$location <- 13 # Advance to Electric Company
+    } else if (players[[j]]$location == 23) {
+      players[[j]]$location <- 29 # Advance to Water Works
+    }
+  } else if (card == 8) {
+    players[[j]]$location <- players[[j]]$location - 3 # Move backwards 3 places
+  } else if (card == 9) {
+    players[[j]]$location <- 11 # Go to jail
+    players[[j]]$jail == TRUE
+  } else if (card == 10) {
+    players[[j]]$location <- 6 # Advance to Reading Railroad
+  } 
+
+  if (players[[j]]$location < players[[j]]$location && card %in% c(3,4,10)) {
+    players[[j]]$money <- players[[j]]$money + 200 # Passing Go for cards 3, 4, and 10
+  }
+  
+    else if (card == 11) {
+      players[[j]]$money <- players[[j]]$money + 50 # Bank pays you $50
+    }
+    else if (card == 12) {
+      players[[j]]$get_out_jail == TRUE # Get out of jail free card
+    }
+    else if (card == 13) {
+      players[[j]]$money <- players[[j]]$money - 15 # Speeding fine $15
+      properties_info$free_parking <- properties_info$free_parking + 15
+    }
+    else if (card == 14) {
+      players[[j]]$money <- players[[j]]$money - 50 * (length(players) - 1)
+        for (k in 1:length(players)) {
+          if (k != j) {
+            players[[k]]$money <- players[[k]]$money + 50 # Elected Chairman of the Board; pay each player $50
+          }
+        }
+    }
+    else if (card == 15) {
+      players[[j]]$money <- players[[j]]$money + 150 # Building loan matures; collect $150
+      
+      # Card 16 is paying for houses and hotels -- doesn't apply here
+    }
+}
+}
+
 # Community Chest Cards Function
 chest_positions <- c(3, 18, 34)
 chest <- function() {
