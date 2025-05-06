@@ -783,7 +783,7 @@ while (# at least 2 players are still in) {
         }
       }
       # Increment number of turns attribute
-      # If players account is negative then they are out
+      # If any players account is negative then they are out
     }  
   }
 }
