@@ -448,8 +448,8 @@ free_parking_fund <- 0
 
 free_parking <- function(){
   if (players[[j]]$location == 20) {  # Free Parking position
-  players[[j]]$money <- players[[j]]$money + free_parking_pool
-  free_parking_pool <- 0  # Reset the pool
+  players[[j]]$money <- players[[j]]$money + free_parking_fund
+  free_parking_fund <- 0  # Reset the fund
   }
 }
 ```
