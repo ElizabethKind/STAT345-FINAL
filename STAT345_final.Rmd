@@ -377,7 +377,7 @@ chance <- function() {
     }
     else if (card == 13) {
       players[[j]]$money <- players[[j]]$money - 15 # Speeding fine $15
-      # Add to free parking
+      free_parking_fund <- free_parking_fund + 15
     }
     else if (card == 14) {
       players[[j]]$money <- players[[j]]$money - 50 * (length(players) - 1)
@@ -406,7 +406,7 @@ chest <- function() {
       players[[j]]$money <- players[[j]]$money + 200 # Bank error in your favor. Collect $200
     } else if (chest_card == 3) {
       players[[j]]$money <- players[[j]]$money - 50 # Doctor’s fee. Pay $50
-      # Add to free parking
+      free_parking_fund <- free_parking_fund + 50
     } else if (chest_card == 4) {
       players[[j]]$money <- players[[j]]$money + 50 # From sale of stock you get $50
     } else if (chest_card == 5) {
@@ -428,13 +428,13 @@ chest <- function() {
       players[[j]]$money <- players[[j]]$money + 100 # Life insurance matures. Collect $100
     } else if (chest_card == 11) {
       players[[j]]$money <- players[[j]]$money - 100 # Pay hospital fees of $100
-      # Add to free parking
+      free_parking_fund <- free_parking_fund + 100
     } else if (chest_card == 12) {
       players[[j]]$money <- players[[j]]$money - 50 # Pay school fees of $50
-      # Add to free parking
+      free_parking_fund <- free_parking_fund + 50
     } else if (chest_card == 13) {
       players[[j]]$money <- players[[j]]$money - 25 # Receive $25 consultancy fee
-      # Add to free parking
+      free_parking_fund <- free_parking_fund + 25
     } else if (chest_card == 14) {
       players[[j]]$money <- players[[j]]$money + 10 # You have won second prize in a beauty contest. Collect $10
     } else if (chest_card == 15) {
