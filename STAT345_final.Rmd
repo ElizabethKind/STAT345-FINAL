@@ -521,7 +521,7 @@ rent <- function(x) {
   }
   
   owner <- ownership(x)
-  if (owner != null) {
+  if (owner$in == TRUE) {
     if (x == 2) { # Mediterranean Ave
       players[[j]]$account = players[[j]]$account - 2
       owner$account = owner$account + 2
