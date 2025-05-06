@@ -521,7 +521,7 @@ rent <- function(x) {
   }
   
   owner <- ownership(x)
-  if (owner$in == TRUE) {
+  if (owner$in_game == TRUE) {
     if (x == 2) { # Mediterranean Ave
       players[[j]]$account = players[[j]]$account - 2
       owner$account = owner$account + 2
@@ -618,7 +618,7 @@ players <- list(
     owned_properties <- c(),
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
-    in = TRUE),
+    in_game = TRUE),
   player2 <- data.frame(
     ID = 2,
     location = 0,
@@ -629,7 +629,7 @@ players <- list(
     owned_properties <- c(),
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
-    in = TRUE),
+    in_game = TRUE),
   player3 <- data.frame(
     ID = 3,
     location = 0,
@@ -640,7 +640,7 @@ players <- list(
     owned_properties <- c(),
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
-    in = TRUE),
+    in_game = TRUE),
   player4 <- data.frame(
     ID = 4,
     location = 0,
@@ -651,7 +651,7 @@ players <- list(
     owned_properties <- c(),
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
-    in = TRUE)
+    in_game = TRUE)
   )
 
 # Make attribute to know how many players are still in
@@ -660,7 +660,7 @@ players <- list(
 while (# at least 2 players are still in) {
   # Add rent function to this whole thing
   for (j in 1:4) {
-    if (players[[j]]$in != FALSE) {
+    if (players[[j]]$in_game != FALSE) {
       if (players[[j]]$jail == TRUE) {
         d1 = dice_1()
         d2 = dice_2()
