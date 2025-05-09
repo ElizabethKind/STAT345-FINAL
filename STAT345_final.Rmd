@@ -678,6 +678,7 @@ properties <- c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 2
 
 # Randomly give each player 7 properties
 property_groups <- divide_properties(properties)
+print(property_groups)
 # Add location of properties to players owned properties vector
 players <- list(
   player1 <- list(
@@ -688,7 +689,7 @@ players <- list(
     jail_rolls = 0,
     account = 1500,
     owned_properties <- property_groups[1],
-    rails_and_utils <- special_ownership(owned_preperties),
+    rails_and_utils <- special_ownership(unlist(owned_properties)),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
   player2 <- list(
@@ -699,7 +700,7 @@ players <- list(
     jail_rolls = 0,
     account = 1500,
     owned_properties <- property_groups[2],
-    rails_and_utils <- special_ownership(owned_preperties),
+    rails_and_utils <- special_ownership(unlist(owned_properties)),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
   player3 <- list(
@@ -710,7 +711,7 @@ players <- list(
     jail_rolls = 0,
     account = 1500,
     owned_properties <- property_groups[3],
-    rails_and_utils <- special_ownership(owned_preperties),
+    rails_and_utils <- special_ownership(unlist(owned_properties)),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
   player4 <- list(
@@ -721,19 +722,21 @@ players <- list(
     jail_rolls = 0,
     account = 1500,
     owned_properties <- property_groups[4],
-    rails_and_utils <- special_ownership(owned_preperties),
+    rails_and_utils <- special_ownership(unlist(owned_properties)),
     get_out_of_jail_free = FALSE,
     in_game = TRUE)
   )
 
 # Make attribute to know how many players are still in
+players_in <- 4
 # Make attribute to count the number of turns taken
+total_turns <- 0
 
-while (# at least 2 players are still in) {
+while (players_in > 1) {
   # Add rent function to this whole thing
   for (j in 1:4) {
-    if (players[[j]]$in_game != FALSE) {
-      if (players[[j]]$jail == TRUE) {
+    if (players[[j]]$in_game == TRUE) {
+      if (players[[j]]$jail == TRUE & players[[j]]$get_out_of_jail_free == FALSE) {
         d1 = dice_1()
         d2 = dice_2()
         jail_rolls <- jail_rolls + 1
@@ -744,62 +747,75 @@ while (# at least 2 players are still in) {
           dice_total <- dice_1() + dice_2()
           players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
           if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
-            game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
           }
+          # Add community chest
           if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
-           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
-           chest()
+            chest()
           }
+          # Pay rent
+          rent(players[[j]]$location)
         }
+        total_turns = total_turns + 1
         
       } else {
+        if (players[[j]]$jail == TRUE & players[[j]]$get_out_of_jail_free == TRUE) {
+          players[[j]]$jail == FALSE
+          players[[j]]$get_out_of_jail_free == FALSE
+        }
         d1 = dice_1()
         d2 = dice_2()
         dice_total <- dice_1() + dice_2()
         players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
         if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
-            game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
         }
         if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
-           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
-           chest()
+            chest()
           }
-        
-        if (players[[j]]$location == 31) {
-          players[[j]]$location <- 11
-          jail = TRUE
-        } else if (d1 == d2) {
-          players[[j]]$double_rolls = players[[j]]$double_rolls + 1
-        }
-        
-        while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) {
-          d1 = dice_1()
-          d2 = dice_2()
-          dice_total <- dice_1() + dice_2()
-          players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
-          if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
-            game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
-            chance()
-          }
-          if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
-           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
-           chest()
-          }
-          if (d1 == d2) {
-            players[[j]]$double_rolls = players[[j]]$double_rolls + 1
-          }
-        }
-        
-        if (players[[j]]$double_rolls == 3) {
-          players[[j]]$location <- 11
-          jail = TRUE
-        }
+          # Pay rent
+          rent(players[[j]]$location)
       }
-      # Increment number of turns attribute
-      # If any players account is negative then they are out
-    }  
+        
+      if (players[[j]]$location == 31) {
+        players[[j]]$location <- 11
+        jail = TRUE
+      } else if (d1 == d2) {
+        players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+      }
+        
+      while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) {
+        d1 = dice_1()
+        d2 = dice_2()
+        dice_total <- dice_1() + dice_2()
+        players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+        if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
+          chance()
+        }
+        # Add community chest
+        if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
+          chest()
+        }
+        # Pay rent
+        rent(players[[j]]$location)
+      }
+          
+      if (d1 == d2) {
+        players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+      }
+      
+      if (players[[j]]$double_rolls == 3) {
+        players[[j]]$location <- 11
+        jail = TRUE
+      }
+      
+      if (players[[j]]$account < 0) {
+        players[[j]]$in_game = FALSE
+        players_in = players_in - 1
+      }
+      
+      total_turns = total_turns + 1
+    }
   }
 }
 ```
