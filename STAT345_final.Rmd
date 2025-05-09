@@ -683,7 +683,7 @@ properties <- c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 2
 property_groups <- divide_properties(properties)
 # Add location of properties to players owned properties vector
 players <- list(
-  player1 <- data.frame(
+  player1 <- list(
     ID = 1,
     location = 0,
     double_rolls = 0,
@@ -694,7 +694,7 @@ players <- list(
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
-  player2 <- data.frame(
+  player2 <- list(
     ID = 2,
     location = 0,
     double_rolls = 0,
@@ -705,7 +705,7 @@ players <- list(
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
-  player3 <- data.frame(
+  player3 <- list(
     ID = 3,
     location = 0,
     double_rolls = 0,
@@ -716,7 +716,7 @@ players <- list(
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
-  player4 <- data.frame(
+  player4 <- list(
     ID = 4,
     location = 0,
     double_rolls = 0,
