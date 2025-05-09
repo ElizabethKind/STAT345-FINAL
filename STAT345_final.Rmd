@@ -750,8 +750,10 @@ while (# at least 2 players are still in) {
             game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
           }
-          # Add community chest
-          game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+          if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
+           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+           chest()
+          }
         }
         
       } else {
@@ -763,8 +765,10 @@ while (# at least 2 players are still in) {
             game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
         }
-        # Add community chest
-        game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+        if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
+           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+           chest()
+          }
         
         if (players[[j]]$location == 31) {
           players[[j]]$location <- 11
@@ -782,9 +786,10 @@ while (# at least 2 players are still in) {
             game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
           }
-          # Add community chest
-          game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
-          
+          if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
+           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
+           chest()
+          }
           if (d1 == d2) {
             players[[j]]$double_rolls = players[[j]]$double_rolls + 1
           }
