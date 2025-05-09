@@ -318,10 +318,8 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
 ## Section Five
 ```{r}
 # Community Chest Cards Function
-chest_positions <- c(3, 18, 34)
 chest <- function() {
   chest_card <- sample(1:16, 1)
-  if (players[[j]]$location %in% chest_positions) {
     if (chest_card == 1) {
       players[[j]]$location <- 1 # Advance to Go (Collect $200)
       players[[j]]$account <- players[[j]]$account + 200
@@ -364,7 +362,6 @@ chest <- function() {
       players[[j]]$account <- players[[j]]$account + 100 # You inherit $100
     }
       # Card 16 is paying for houses and hotels -- doesn't apply here
-  }
 }
 
 free_parking_fund <- 0
