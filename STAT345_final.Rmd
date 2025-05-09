@@ -455,6 +455,80 @@ chance <- function() {
 }
 ```
 
+### Chance function - Lucy
+```{r}
+chance <- function() {
+  card <- sample(1:16, 1)
+  if (card == 1) {
+    players[[j]]$location <- 40 # Advance to Boardwalk
+  } else if (card == 2) {
+    players[[j]]$location <- 1 # Advance to Go
+    players[[j]]$account <- players[[j]]$account + 200
+  } else if (card == 3) {
+    players[[j]]$location <- 25 # Advance to Illinois Ave
+    if (players[[j]]$location == 37) {
+      players[[j]]$account <- players[[j]]$account + 200
+    }
+  } else if (card == 4) {
+    players[[j]]$location <- 12 # Advance to St. Charles Place
+    if (players[[j]]$location != 8) {
+      players[[j]]$account <- players[[j]]$account + 200
+    }
+  } else if (card == 5 || card == 6) { # Advance to the nearest railroad
+    if (players[[j]]$location == 37) {
+      players[[j]]$location <- 6 # Advance to Reading Railroad
+      players[[j]]$account <- players[[j]]$account + 200
+    } else if (players[[j]]$location == 8) {
+      players[[j]]$location <- 16 # Advance to Pennsylvania Railroad
+    } else if (players[[j]]$location == 23) {
+      players[[j]]$location <- 26 # Advance to B&O Railroad
+    } 
+  } else if (card == 7) { # Advance to the nearest utility
+    if (players[[j]]$location == 8 || players[[j]]$location == 37) {
+      players[[j]]$location <- 13 # Advance to Electric Company
+      if (players[[j]]$location == 37) {
+      players[[j]]$account <- players[[j]]$account + 200
+    }
+    } else if (players[[j]]$location == 23) {
+      players[[j]]$location <- 29 # Advance to Water Works
+    }
+  } else if (card == 8) {
+    players[[j]]$location <- players[[j]]$location - 3 # Move backwards 3 places
+  } else if (card == 9) {
+    players[[j]]$location <- 11 # Go to jail
+    players[[j]]$jail == TRUE
+  } else if (card == 10) {
+    players[[j]]$location <- 6 # Advance to Reading Railroad
+    players[[j]]$account <- players[[j]]$account + 200
+  } else if (card == 11) { # Bank pays you $50
+    players[[j]]$account <- players[[j]]$account + 50
+  } else if (card == 12) { # Get out of jail free
+    players[[j]]$get_out_of_jail_free = TRUE
+  } else if (card == 13) { # Speeding fine
+    players[[j]]$account <- players[[j]]$account - 15
+  } else if (card == 14) { # Elected chairman
+    players[[j]]$account <- players[[j]]$account + 150
+    for (k in 1:4) {
+      if (players[[j]] != players[[k]]) {
+        players[[k]]$account <- players[[k]]$account - 50
+      }
+    }
+  } else if (card == 15) { # Building loan matures
+    players[[j]]$account <- players[[j]]$account + 150
+  }
+}
+```
+
+### Divide up properties
+```{r}
+divide_properties <- function(x) {
+  shuffled <- sample(x)
+  n <- length(shuffled)
+  indices <- rep(1:4, times = 7)
+  result <- split(shuffled, indices)
+}
+```
+
 ### Function determines ownership of a property when it is landed on
 ```{r}
 ownership <- function(x) {
@@ -606,6 +680,7 @@ rent <- function(x) {
 properties <- c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 38, 40)
 
 # Randomly give each player 7 properties
+property_groups <- divide_properties(properties)
 # Add location of properties to players owned properties vector
 players <- list(
   player1 <- data.frame(
@@ -615,7 +690,7 @@ players <- list(
     jail = FALSE,
     jail_rolls = 0,
     account = 1500,
-    owned_properties <- c(),
+    owned_properties <- property_groups[1],
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
@@ -626,7 +701,7 @@ players <- list(
     jail = FALSE,
     jail_rolls = 0,
     account = 1500,
-    owned_properties <- c(),
+    owned_properties <- property_groups[2],
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
@@ -637,7 +712,7 @@ players <- list(
     jail = FALSE,
     jail_rolls = 0,
     account = 1500,
-    owned_properties <- c(),
+    owned_properties <- property_groups[3],
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
     in_game = TRUE),
@@ -648,7 +723,7 @@ players <- list(
     jail = FALSE,
     jail_rolls = 0,
     account = 1500,
-    owned_properties <- c(),
+    owned_properties <- property_groups[4],
     rails_and_utils <- special_ownership(owned_preperties),
     get_out_of_jail_free = FALSE,
     in_game = TRUE)
