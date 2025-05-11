@@ -310,7 +310,7 @@ prop_freq2 <- data.frame(
 
 ggplot(prop_freq2, aes(x = property, y = frequency)) +
   geom_bar(stat = "identity", fill = "maroon") +
-  labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail and Doubles Conditions") +
+  labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail, Doubles Conditions, and\nChance Movement Cards") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
