@@ -518,16 +518,20 @@ chance <- function() {
 
 ### Divide up properties
 ```{r}
+#This function will divide all the properties between the four players
+#Input: properties vector
+#Return: Four equal groups of randomly shuffled elements from the properties vector
 divide_properties <- function(x) {
-  shuffled <- sample(x)
-  n <- length(shuffled)
-  indices <- rep(1:4, times = 7)
-  result <- split(shuffled, indices)
+  shuffled <- sample(x) #randomly shuffles all the elements of the properties vector
+  n <- length(shuffled) #length of shuffled vector
+  indices <- rep(1:4, times = 7) #creates a vector that contains a repeating sequence from 1 to 4 that is 28 elements long
+  result <- split(shuffled, indices) #splits shuffled vector into four groups
 }
 ```
 
 ### Function determines ownership of a property when it is landed on
 ```{r}
+#This function will determine the ownership of a property when it is landed on
 ownership <- function(x) {
   for (p in players) {
     for (i in 1:7) {
@@ -545,38 +549,45 @@ ownership <- function(x) {
 
 ### Determines rent for railroads and utilities
 ```{r}
+#This function will calculate fees owed on special properties (railroads and utilities)
+#Input: a vector of integers with each integer corresponding to a property on the board
+#Return: a vector of fees owed
 special_ownership <- function(x) {
-  rail_count <- 0
-  util_count
+  rail_count <- 0 #initialize number of railroad properties held to zero
+  util_count <- 0 #initialize number of utility properties held to zero
   for (i in 1:7) {
+    #check if property is a railroad (positions 6, 16, 26 and 36)
     if (x[i] == 6 || x[i] == 16 || x[i] == 26 || x[i] == 36) {
-      rail_count <- rail_count + 1
+      rail_count <- rail_count + 1 #add one to railroad count vector
+    #check if property is a utility (positions 13 and 29)
     } else if (x[i] == 13 || x[i] == 29) {
-      util_count = util_count + 1
+      util_count = util_count + 1 #add one to utility count vector
     }
   }
   
-  fees <- c()
-  
+  fees <- c() #this vector will hold the fee values
+
+  #determine fee owed based on number railroad cards owned 
   if (rail_count == 0) {
-    fees <- append(fees, 0)
+    fees <- append(fees, 0) #add 0 to fees vector
   } else if (rail_count == 1) {
-    fees <- append(fees, 25)
+    fees <- append(fees, 25) #add 25 to fees vector
   } else if (rail_count == 2) {
-    fees <- append(fees, 50)
+    fees <- append(fees, 50) #add 50 to fees vector
   } else {
-    fees <- append(fees, 100)
+    fees <- append(fees, 100) #add 100 to fees vector
   }
-  
+
+  #determine fee owed based on number utility cards owned 
   if (util_count == 0) {
-    fees <- append(fees, 0)
+    fees <- append(fees, 0) #add 0 to fees vector
   } else if (util_count == 1) {
-    fees <- append(fees, 4)
+    fees <- append(fees, 4) #add 4 to fees vector
   } else {
-    fees <- append(fees, 10)
+    fees <- append(fees, 10) #add 10 to fees vector
   } 
   
-  return(fees)
+  return(fees) #vector of fees owed
 }
 ```
 
