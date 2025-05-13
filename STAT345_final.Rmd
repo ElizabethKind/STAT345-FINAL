@@ -833,18 +833,6 @@ while (players_in > 1) {
   }
 }
 
-library(ggplot2)
-
-prop_freq2 <- data.frame(
-  property = factor(names(property_sum_10games_jail), levels = names(property_sum_10games_jail)),
-  frequency = property_sum_10games_jail
-)
-
-ggplot(prop_freq2, aes(x = property, y = frequency)) +
-  geom_bar(stat = "identity", fill = "pink") +
-  labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail and Doubles Conditions") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ```{r}
