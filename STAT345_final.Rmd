@@ -159,15 +159,18 @@ for (game in 1:10) {
   property_sum_10games_jail <- property_sum_10games_jail + properties
 }  
 
+#assign names to properties
 names(property_sum_10games_jail) <- c("Mediterranean Avenue", "Baltic Avenue", "Reading Railroad", "Oriental Avenue", "Vermont Avenue", "Connecticut Avenue", "St. Charles Place", "Electric Company", "States Avenue", "Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Tennessee Avenue", "New York Avenue", "Kentucky Avenue", "Indiana Avenue", "Illinois Avenue", "B&O Railroad", "Atlantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "Pacific Avenue", "North Carolina Avenue", "Pennsylvania Avenue", "Short Line", "Park Place", "Boardwalk")
 
 library(ggplot2)
 
+#data frame with property names and their frequencies
 prop_freq2 <- data.frame(
   property = factor(names(property_sum_10games_jail), levels = names(property_sum_10games_jail)),
   frequency = property_sum_10games_jail
 )
 
+#plot frequencies in a bar chart
 ggplot(prop_freq2, aes(x = property, y = frequency)) +
   geom_bar(stat = "identity", fill = "pink") +
   labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail and Doubles Conditions") +
@@ -180,7 +183,7 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
 ```{r}
 # Chance function
 chance <- function() {
-  card <- sample(1:16, 1)
+  card <- sample(1:16, 1) #randomly draw a chance card
   if (card == 1) {
     players[[j]]$location <- 40 # Advance to Boardwalk
   } else if (card == 2) {
@@ -214,17 +217,19 @@ chance <- function() {
  }
 
 # Simulation with the chance function and jail conditions
-property_sum_10games_chance <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+property_sum_10games_chance <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) #vector to store property landing totals
 
 for (game in 1:10) {
+  #initialize game board with 41 spaces that all start with 0 times they have been landed on
   game_board <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
+  #initialize each player
   players <- list(
     player1 <- data.frame(
-      location = 0,
-      double_rolls = 0,
-      jail = FALSE,
-      jail_rolls = 0),
+      location = 0, #starting location
+      double_rolls = 0, #number of times doubles has been rolled
+      jail = FALSE, #player does not start in jail
+      jail_rolls = 0), #number of times player has rolled dice while in jail
     player2 <- data.frame(
       location = 0,
       double_rolls = 0,
@@ -242,48 +247,62 @@ for (game in 1:10) {
       jail_rolls = 0)
   )
 
+  #simulate 50 turns in each game
   for (i in 1:50) {
     for (j in 1:4) {
+      #checks if player is in jail
       if (players[[j]]$jail == TRUE) {
         d1 = dice_1()
         d2 = dice_2()
         jail_rolls <- jail_rolls + 1
-        
+
+        #get out of jail by rolling doubles or after 3 attempts at rolling doubles
         if (d1 == d2 || players[[j]]$jail_rolls == 3) {
-          jail = FALSE
-          players[[j]]$jail_rolls <- 0
-          dice_total <- dice_1() + dice_2()
+          jail = FALSE #leaves jail
+          players[[j]]$jail_rolls <- 0 #return jail rolls to 0
+          dice_total <- dice_1() + dice_2() #move after leaving jail
           players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+
+          #land on chance space draw a chance card
           if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
             game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
           }
+          #record space being landed on
           game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
         }
         
       } else {
+        #non-jail movements
         d1 = dice_1()
         d2 = dice_2()
         dice_total <- dice_1() + dice_2()
         players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+
+        #check for landing on a chance space
         if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
             game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
           }
+        #record space being landed on
         game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
-        
+
+        #landing on Go to Jail space
         if (players[[j]]$location == 31) {
-          players[[j]]$location <- 11
-          jail = TRUE
+          players[[j]]$location <- 11 #change player location to jail
+          jail = TRUE #change jail element to true
         } else if (d1 == d2) {
-          players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+          players[[j]]$double_rolls = players[[j]]$double_rolls + 1 #track how many times doubles have been rolled
         }
-        
+
+        #give extra turn when doubles rolled; up to 3 times
         while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) {
           d1 = dice_1()
           d2 = dice_2()
           dice_total <- dice_1() + dice_2()
           players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
+
+          #check for landing on a chance space
           if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
             game_board[players[[j]]$location] <- game_board[players[[j]]$location] + 1
             chance()
@@ -294,7 +313,8 @@ for (game in 1:10) {
             players[[j]]$double_rolls = players[[j]]$double_rolls + 1
           }
         }
-        
+
+        #after rolling doubles 3 times go to jail
         if (players[[j]]$double_rolls == 3) {
           players[[j]]$location <- 11
           jail = TRUE
@@ -303,21 +323,25 @@ for (game in 1:10) {
     }  
   }    
 
+  #track landing frequencies for property spaces
   properties <- game_board[c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 38, 40)]
-  
+
+  #add simulated game to the total
   property_sum_10games_chance <- property_sum_10games_chance + properties
 }  
 
+#assign names to properties
 names(property_sum_10games_chance) <- c("Mediterranean Avenue", "Baltic Avenue", "Reading Railroad", "Oriental Avenue", "Vermont Avenue", "Connecticut Avenue", "St. Charles Place", "Electric Company", "States Avenue", "Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Tennessee Avenue", "New York Avenue", "Kentucky Avenue", "Indiana Avenue", "Illinois Avenue", "B&O Railroad", "Atlantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "Pacific Avenue", "North Carolina Avenue", "Pennsylvania Avenue", "Short Line", "Park Place", "Boardwalk")
 
-# Plot
 library(ggplot2)
 
+#data frame with property names and their frequencies
 prop_freq2 <- data.frame(
   property = factor(names(property_sum_10games_chance), levels = names(property_sum_10games_chance)),
   frequency = property_sum_10games_chance
 )
 
+#plot frequencies in a bar chart
 ggplot(prop_freq2, aes(x = property, y = frequency)) +
   geom_bar(stat = "identity", fill = "maroon") +
   labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies\nWith Jail, Doubles Conditions, and\nChance Movement Cards") +
