@@ -819,3 +819,27 @@ while (players_in > 1) {
   }
 }
 ```
+
+```{r}
+get_active_players <- function(players) {
+  return(which(sapply(players, function(p) p$in_game)))
+}
+
+turn_counter <- 0 # put before game loop 
+
+turn_counter <- turn_counter + 1 # put inside the for (j in 1:4) loop, after each player's turn
+
+# At end of game loop, after while loop finishes 
+remaining_players <- get_active_players(players)
+
+if (length(remaining_players) == 1) {
+  winner <- players[[remaining_players]]
+  
+  cat("\n GAME OVER! \n")
+  cat("---------------------\n")
+  cat("Winner Player ID:", winner$ID, "\n")
+  cat("Number of Turns:", turn_counter, "\n")
+  cat("Final Money Amount:", winner$account, "\n")
+  cat("---------------------\n")
+}
+```
