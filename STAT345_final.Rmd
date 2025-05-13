@@ -17,47 +17,57 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Section Two
 ```{r}
 dice_1 <- function() {
-  sample(1:6, 1)
+  sample(1:6, 1) #randomly choose one number from 1-6
 }
 
 dice_2 <- function() {
-  sample(1:6, 1)
+  sample(1:6, 1) #randomly choose one number from 1-6
 }
 
 property_sum_10games <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
+#simulate 10 games
 for (game in 1:10) {
+  #initialize game board with 41 spaces that all start with 0 times they have been landed on
   game_board <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
+  #list of players
   players <- list(
+    #initialize player positions (all start at position 0)
     player1 <- 0,
     player2 <- 0,
     player3 <- 0,
     player4 <- 0
   )
 
+  #simulate 50 turns per player (200 turns in each game)
   for (i in 1:50) {
     for (j in 1:4) {
-      dice_total <- dice_1() + dice_2()
-      players[[j]] <- (players[[j]] + dice_total) %% 41
-      game_board[players[[j]]] <- game_board[players[[j]]] + 1
+      dice_total <- dice_1() + dice_2() #rolling dice
+      players[[j]] <- (players[[j]] + dice_total) %% 41 #move player forward by dice_total amount repeating around board using %% 41
+      game_board[players[[j]]] <- game_board[players[[j]]] + 1 #add one for the count for the space the player just moved to
     }
   }
 
+  #select only the indices on the board that correspond to properties
   properties <- game_board[c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 38, 40)]
-  
+
+  #collect landing frequencies for 10 games
   property_sum_10games <- property_sum_10games + properties
 }  
 
+#assign names to properties
 names(property_sum_10games) <- c("Mediterranean Avenue", "Baltic Avenue", "Reading Railroad", "Oriental Avenue", "Vermont Avenue", "Connecticut Avenue", "St. Charles Place", "Electric Company", "States Avenue", "Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Tennessee Avenue", "New York Avenue", "Kentucky Avenue", "Indiana Avenue", "Illinois Avenue", "B&O Railroad", "Atlantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "Pacific Avenue", "North Carolina Avenue", "Pennsylvania Avenue", "Short Line", "Park Place", "Boardwalk")
 
 library(ggplot2)
 
+#data frame with property names and their frequencies
 prop_freq1 <- data.frame(
   property = factor(names(property_sum_10games), levels = names(property_sum_10games)),
   frequency = property_sum_10games
 )
 
+#plot frequencies in a bar chart
 ggplot(prop_freq1, aes(x = property, y = frequency)) +
   geom_bar(stat = "identity", fill = "skyblue") +
   labs(x = "Index", y = "Frequency", title = "Bar Plot of Property Frequencies") +
