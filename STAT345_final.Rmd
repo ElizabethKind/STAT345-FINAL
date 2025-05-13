@@ -537,7 +537,7 @@ ownership <- function(x) {
     for (i in 1:7) {
       if (x == players[[p]]$owned_properties[i]) {
         if (p == players[[p]]$ID) {
-          return(null)
+          return(NULL)
         } else {
           return(players[[p]])
         }
