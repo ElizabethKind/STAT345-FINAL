@@ -593,12 +593,15 @@ special_ownership <- function(x) {
 
 ### Function to collect/pay rent and get money for passing go
 ```{r}
+#This function facilitates rent transactions between players
+#Input: a numeric value that corresponds to a position on the board that the player has moved to
+#Return: modifies player accounts in the player list
 rent <- function(x) {
-  if (x == 1) { # Go
-    players[[j]]$account = players[[j]]$account + 200 
-  } else if (x == 5) { # Income tax
-    players[[j]]$account = players[[j]]$account - 200
-  } else if (x == 39) { # Luxury tax
+  if (x == 1) { # Go position
+    players[[j]]$account = players[[j]]$account + 200 #player money +200
+  } else if (x == 5) { # Income tax position
+    players[[j]]$account = players[[j]]$account - 200 #player money -200
+  } else if (x == 39) { # Luxury tax position
     players[[j]]$account = players[[j]]$account - 100
   }
   
