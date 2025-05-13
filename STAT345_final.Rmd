@@ -422,6 +422,9 @@ chance <- function() {
     }
   } else if (card == 8) {
     players[[j]]$location <- players[[j]]$location - 3 # Move backwards 3 places
+    if (players[[j]]$location == 1) {
+        players[[j]]$account <- players[[j]]$account + 200 # If landed on GO collect $200
+      }
     new_location <- players[[j]]$location
   } else if (card == 9) {
     players[[j]]$location <- 11 # Go to jail
@@ -432,8 +435,8 @@ chance <- function() {
     new_location <- players[[j]]$location
   } 
 
-  if (new_location < old_location && card %in% c(3,4,10)) {
-    players[[j]]$account <- players[[j]]$account + 200 # Passing Go for cards 3, 4, and 10
+  if (new_location < old_location && card %in% c(1, 3:7, 10)) {
+    players[[j]]$account <- players[[j]]$account + 200 # Passing Go for cards 1, 3-7, and 10
   }
   
     else if (card == 11) {
