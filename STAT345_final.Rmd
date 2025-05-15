@@ -349,7 +349,213 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Section Five
+### Section Five
+```{r}
+# Function to simulate a game
+play_game <- function(use_free_parking_rule = FALSE) {
+
+  wrap_position <- function(pos) {
+    if ((pos %% 40) == 0) 40 else pos %% 40
+  }
+
+  game_board <- rep(0, 41)
+  free_parking_pot <- 0
+  
+  ownable_positions <- c(1, 3, 5, 6, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 21, 23, 24,
+                         25, 26, 27, 28, 29, 31, 32, 34, 35, 37, 39)
+  ownership <- rep(NA, 41)
+
+  # Randomly assign 7 properties per player
+  all_props <- sample(ownable_positions)
+  for (i in 1:4) {
+    for (p in all_props[((i - 1) * 7 + 1):(i * 7)]) {
+      ownership[p] <- i
+    }
+  }
+
+  # Initialize players as lists
+  players <- list()
+  for (i in 1:4) {
+    players[[i]] <- list(
+      location = 1,
+      double_rolls = 0,
+      jail = FALSE,
+      jail_rolls = 0,
+      account = 100,
+      get_out_of_jail_free = FALSE,
+      active = TRUE
+    )
+  }
+
+  property_rent_df <- data.frame(
+    position = ownable_positions,
+    rent = c(2, 4, 25, 6, 6, 8, 10, 10, 12, 14, 14, 16,
+             18, 18, 20, 22, 22, 25, 26, 26, 28, 28,
+             0, 30, 32, 35, 50, 50)
+  )
+
+  rent_table <- rep(0, 41)
+  rent_table[property_rent_df$position] <- property_rent_df$rent
+
+  dice_1 <- function() sample(1:6, 1)
+  dice_2 <- function() sample(1:6, 1)
+
+  # Chance card effect
+  chance <- function(j, players, free_parking_pot) {
+    card <- sample(1:16, 1)
+    if (card == 1) players[[j]]$location <- 40
+    else if (card == 2) {
+      players[[j]]$location <- 1
+      players[[j]]$account <- players[[j]]$account + 200
+    } else if (card == 3) players[[j]]$location <- 25
+    else if (card == 4) players[[j]]$location <- 12
+    else if (card %in% c(5, 6)) {
+      if (players[[j]]$location == 37) {
+        players[[j]]$location <- 6
+        players[[j]]$account <- players[[j]]$account + 200
+      } else if (players[[j]]$location == 8) {
+        players[[j]]$location <- 16
+      } else if (players[[j]]$location == 23) {
+        players[[j]]$location <- 26
+      }
+    } else if (card == 7) players[[j]]$location <- 13
+    else if (card == 8) players[[j]]$location <- wrap_position(players[[j]]$location - 3)
+    else if (card == 9) {
+      players[[j]]$location <- 11
+      players[[j]]$jail <- TRUE
+    } else if (card == 10) {
+      players[[j]]$location <- 6
+      players[[j]]$account <- players[[j]]$account + 200
+    } else if (card == 11) players[[j]]$account <- players[[j]]$account + 50
+    else if (card == 12) players[[j]]$get_out_of_jail_free <- TRUE
+    else if (card == 13) {
+      players[[j]]$account <- players[[j]]$account - 15
+      if (use_free_parking_rule) free_parking_pot <- free_parking_pot + 15
+    } else if (card == 14) {
+      for (k in 1:4) {
+        if (k != j && players[[k]]$active) {
+          players[[k]]$account <- players[[k]]$account - 50
+          players[[j]]$account <- players[[j]]$account + 50
+        }
+      }
+    } else if (card == 15) players[[j]]$account <- players[[j]]$account + 150
+    return(list(players = players, free_parking_pot = free_parking_pot))
+  }
+
+  # Community Chest
+  community_chest <- function(j, players, free_parking_pot) {
+    card <- sample(1:16, 1)
+    if (card == 1) {
+      players[[j]]$location <- 1
+      players[[j]]$account <- players[[j]]$account + 200
+    } else if (card == 2) players[[j]]$account <- players[[j]]$account + 200
+    else if (card == 3) {
+      players[[j]]$account <- players[[j]]$account - 50
+      if (use_free_parking_rule) free_parking_pot <- free_parking_pot + 50
+    } else if (card == 4) players[[j]]$account <- players[[j]]$account + 50
+    else if (card == 5) players[[j]]$account <- players[[j]]$account + 100
+    else if (card == 6) {
+      players[[j]]$account <- players[[j]]$account - 100
+      if (use_free_parking_rule) free_parking_pot <- free_parking_pot + 100
+    } else if (card == 7) {
+      players[[j]]$location <- 11
+      players[[j]]$jail <- TRUE
+    } else if (card == 8) players[[j]]$get_out_of_jail_free <- TRUE
+    else if (card == 9) players[[j]]$account <- players[[j]]$account + 25
+    else if (card == 10) {
+      players[[j]]$account <- players[[j]]$account - 15
+      if (use_free_parking_rule) free_parking_pot <- free_parking_pot + 15
+    }
+    return(list(players = players, free_parking_pot = free_parking_pot))
+  }
+
+  round_count <- 0
+  repeat {
+    round_count <- round_count + 1
+    active_players <- which(sapply(players, function(p) p$active))
+
+    if (length(active_players) == 1) {
+      return(round_count)
+    }
+
+    for (j in active_players) {
+      if (!players[[j]]$active) next
+
+      if (players[[j]]$jail) {
+        d1 <- dice_1(); d2 <- dice_2()
+        players[[j]]$jail_rolls <- players[[j]]$jail_rolls + 1
+        if (d1 == d2 || players[[j]]$jail_rolls == 3) {
+          players[[j]]$jail <- FALSE
+          players[[j]]$jail_rolls <- 0
+          move <- d1 + d2
+          players[[j]]$location <- wrap_position(players[[j]]$location + move)
+        } else {
+          next
+        }
+      } else {
+        d1 <- dice_1(); d2 <- dice_2()
+        move <- d1 + d2
+        players[[j]]$location <- wrap_position(players[[j]]$location + move)
+
+        players[[j]]$double_rolls <- ifelse(d1 == d2, players[[j]]$double_rolls + 1, 0)
+        if (players[[j]]$double_rolls == 3) {
+          players[[j]]$location <- 11
+          players[[j]]$jail <- TRUE
+          players[[j]]$double_rolls <- 0
+          next
+        }
+      }
+
+      loc <- players[[j]]$location
+
+      if (loc %in% c(8, 23, 37)) {
+        result <- chance(j, players, free_parking_pot)
+        players <- result$players
+        free_parking_pot <- result$free_parking_pot
+        loc <- players[[j]]$location
+      }
+
+      if (loc %in% c(2, 17, 33)) {
+        result <- community_chest(j, players, free_parking_pot)
+        players <- result$players
+        free_parking_pot <- result$free_parking_pot
+        loc <- players[[j]]$location
+      }
+
+      if (use_free_parking_rule && loc == 20) {
+        players[[j]]$account <- players[[j]]$account + free_parking_pot
+        free_parking_pot <- 0
+      }
+
+      if (loc == 31) {
+        players[[j]]$location <- 11
+        players[[j]]$jail <- TRUE
+        next
+      }
+
+      if (!is.na(ownership[loc]) && ownership[loc] != j && players[[ownership[loc]]]$active) {
+        rent <- rent_table[loc]
+        players[[j]]$account <- players[[j]]$account - rent
+        players[[ownership[loc]]]$account <- players[[ownership[loc]]]$account + rent
+      }
+
+      if (players[[j]]$account < 0) {
+        players[[j]]$active <- FALSE
+        bankrupt_props <- which(ownership == j)
+        ownership[bankrupt_props] <- NA
+        rent_table[bankrupt_props] <- 0
+      }
+    }
+  }
+}
+
+# Simulate 10 games
+games_fp <- replicate(2, play_game(TRUE))
+games_nofp <- replicate(2, play_game(FALSE))
+
+cat("With Free Parking: Avg Rounds:", mean(games_fp), "\n")
+cat("Without Free Parking:", mean(games_nofp), "\n")
+```
 ```{r}
 # Community Chest Cards Function
 chest <- function() {
