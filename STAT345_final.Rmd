@@ -357,7 +357,7 @@ play_game <- function(use_free_parking_rule = FALSE) {
     if ((pos %% 40) == 0) 40 else pos %% 40
   }
 
-  game_board <- rep(0, 41)
+  game_board <- rep(0, 40)
   free_parking_pot <- 0
 
   # Property groups
