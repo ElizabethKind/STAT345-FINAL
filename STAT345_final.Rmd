@@ -350,34 +350,35 @@ ggplot(prop_freq2, aes(x = property, y = frequency)) +
 ```
 
 ### Section Five
+# Function to simulate a game with rent and bank payments
 ```{r}
-# Function to simulate a game
 play_game <- function(use_free_parking_rule = FALSE) {
-
   wrap_position <- function(pos) {
     if ((pos %% 40) == 0) 40 else pos %% 40
   }
 
   game_board <- rep(0, 41)
   free_parking_pot <- 0
+
+  # Property groups
+  p1 <- c(32, 17, 30, 26, 16, 40, 20)
+  p2 <- c(35, 33, 36, 15, 7, 22, 24)
+  p3 <- c(28, 29, 19, 13, 27, 12, 4)
+  p4 <- c(25, 6, 2, 38, 10, 9, 14)
   
-  ownable_positions <- c(1, 3, 5, 6, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 21, 23, 24,
-                         25, 26, 27, 28, 29, 31, 32, 34, 35, 37, 39)
-  ownership <- rep(NA, 41)
+  # Rent values
+  r1 <- c(26, 14, 24, 25, 25, 50, 16)
+  r2 <- c(28, 26, 25, 12, 6, 18, 18)
+  r3 <- c(22, 4, 14, 4, 22, 10, 4)
+  r4 <- c(20, 25, 2, 35, 8, 6, 10)
 
-  # Randomly assign 7 properties per player
-  all_props <- sample(ownable_positions)
-  for (i in 1:4) {
-    for (p in all_props[((i - 1) * 7 + 1):(i * 7)]) {
-      ownership[p] <- i
-    }
-  }
-
-  # Initialize players as lists
+  # Initialize players
   players <- list()
   for (i in 1:4) {
     players[[i]] <- list(
       location = 1,
+      owned = c(),
+      rents = c(),
       double_rolls = 0,
       jail = FALSE,
       jail_rolls = 0,
@@ -386,21 +387,23 @@ play_game <- function(use_free_parking_rule = FALSE) {
       active = TRUE
     )
   }
-
-  property_rent_df <- data.frame(
-    position = ownable_positions,
-    rent = c(2, 4, 25, 6, 6, 8, 10, 10, 12, 14, 14, 16,
-             18, 18, 20, 22, 22, 25, 26, 26, 28, 28,
-             0, 30, 32, 35, 50, 50)
-  )
-
-  rent_table <- rep(0, 41)
-  rent_table[property_rent_df$position] <- property_rent_df$rent
+  
+  # Assign properties
+  players[[1]]$owned <- p1
+  players[[2]]$owned <- p2
+  players[[3]]$owned <- p3
+  players[[4]]$owned <- p4
+  
+  # Assign rents
+  players[[1]]$rents <- r1
+  players[[2]]$rents <- r2
+  players[[3]]$rents <- r3
+  players[[4]]$rents <- r4
 
   dice_1 <- function() sample(1:6, 1)
   dice_2 <- function() sample(1:6, 1)
 
-  # Chance card effect
+  # Chance cards
   chance <- function(j, players, free_parking_pot) {
     card <- sample(1:16, 1)
     if (card == 1) players[[j]]$location <- 40
@@ -441,7 +444,7 @@ play_game <- function(use_free_parking_rule = FALSE) {
     } else if (card == 15) players[[j]]$account <- players[[j]]$account + 150
     return(list(players = players, free_parking_pot = free_parking_pot))
   }
-
+  
   # Community Chest
   community_chest <- function(j, players, free_parking_pot) {
     card <- sample(1:16, 1)
@@ -470,44 +473,69 @@ play_game <- function(use_free_parking_rule = FALSE) {
   }
 
   round_count <- 0
+  active_player_count <- 4
+  max_rounds <- 1000  # Prevent infinite loop
+  
   repeat {
-    round_count <- round_count + 1
-    active_players <- which(sapply(players, function(p) p$active))
-
-    if (length(active_players) == 1) {
+    round_count <- round_count + 1  # Increment number of rounds played
+    
+    if (round_count > max_rounds) {
+      return(max_rounds)
+    }
+    
+    if (active_player_count < 2) {
       return(round_count)
     }
 
-    for (j in active_players) {
+    for (j in 1:4) {
       if (!players[[j]]$active) next
 
+      # Jail handling
       if (players[[j]]$jail) {
-        d1 <- dice_1(); d2 <- dice_2()
+        d1 <- dice_1()
+        d2 <- dice_2()
         players[[j]]$jail_rolls <- players[[j]]$jail_rolls + 1
-        if (d1 == d2 || players[[j]]$jail_rolls == 3) {
+        
+        if (d1 == d2) {  # Doubles get out of jail
           players[[j]]$jail <- FALSE
           players[[j]]$jail_rolls <- 0
           move <- d1 + d2
           players[[j]]$location <- wrap_position(players[[j]]$location + move)
-        } else {
+        } 
+        else if (players[[j]]$jail_rolls >= 3) {  # Must pay to leave jail after 3 turns
+          players[[j]]$jail <- FALSE
+          players[[j]]$jail_rolls <- 0
+          players[[j]]$account <- players[[j]]$account - 50
+          if (use_free_parking_rule) free_parking_pot <- free_parking_pot + 50
+          next
+        } 
+        else {  # Still in jail
           next
         }
-      } else {
-        d1 <- dice_1(); d2 <- dice_2()
+      } 
+      else {  # Regular turn
+        d1 <- dice_1()
+        d2 <- dice_2()
         move <- d1 + d2
-        players[[j]]$location <- wrap_position(players[[j]]$location + move)
-
-        players[[j]]$double_rolls <- ifelse(d1 == d2, players[[j]]$double_rolls + 1, 0)
-        if (players[[j]]$double_rolls == 3) {
-          players[[j]]$location <- 11
-          players[[j]]$jail <- TRUE
+        
+        if (d1 == d2) {
+          players[[j]]$double_rolls <- players[[j]]$double_rolls + 1
+          if (players[[j]]$double_rolls == 3) {  # Three doubles go to jail
+            players[[j]]$location <- 11
+            players[[j]]$jail <- TRUE
+            players[[j]]$double_rolls <- 0
+            next
+          }
+        } else {
           players[[j]]$double_rolls <- 0
-          next
         }
+        
+        players[[j]]$location <- wrap_position(players[[j]]$location + move)
       }
 
       loc <- players[[j]]$location
 
+      # Landed on Chance 
       if (loc %in% c(8, 23, 37)) {
         result <- chance(j, players, free_parking_pot)
         players <- result$players
@@ -515,6 +543,7 @@ play_game <- function(use_free_parking_rule = FALSE) {
         loc <- players[[j]]$location
       }
 
+      # Landed on Community Chest 
       if (loc %in% c(2, 17, 33)) {
         result <- community_chest(j, players, free_parking_pot)
         players <- result$players
@@ -522,583 +551,72 @@ play_game <- function(use_free_parking_rule = FALSE) {
         loc <- players[[j]]$location
       }
 
+      # Get free Parking
       if (use_free_parking_rule && loc == 20) {
         players[[j]]$account <- players[[j]]$account + free_parking_pot
         free_parking_pot <- 0
       }
 
+      # Go to Jail
       if (loc == 31) {
         players[[j]]$location <- 11
         players[[j]]$jail <- TRUE
         next
       }
 
-      if (!is.na(ownership[loc]) && ownership[loc] != j && players[[ownership[loc]]]$active) {
-        rent <- rent_table[loc]
-        players[[j]]$account <- players[[j]]$account - rent
-        players[[ownership[loc]]]$account <- players[[ownership[loc]]]$account + rent
-      }
-
-      if (players[[j]]$account < 0) {
-        players[[j]]$active <- FALSE
-        bankrupt_props <- which(ownership == j)
-        ownership[bankrupt_props] <- NA
-        rent_table[bankrupt_props] <- 0
-      }
-    }
-  }
-}
-
-# Simulate 10 games
-games_fp <- replicate(2, play_game(TRUE))
-games_nofp <- replicate(2, play_game(FALSE))
-
-cat("With Free Parking: Avg Rounds:", mean(games_fp), "\n")
-cat("Without Free Parking:", mean(games_nofp), "\n")
-```
-```{r}
-# Community Chest Cards Function
-chest <- function() {
-  chest_card <- sample(1:16, 1)
-    if (chest_card == 1) {
-      players[[j]]$location <- 1 # Advance to Go (Collect $200)
-      players[[j]]$account <- players[[j]]$account + 200
-    } else if (chest_card == 2) {
-      players[[j]]$account <- players[[j]]$account + 200 # Bank error in your favor. Collect $200
-    } else if (chest_card == 3) {
-      players[[j]]$account <- players[[j]]$account - 50 # Doctor’s fee. Pay $50
-      free_parking_fund <- free_parking_fund + 50
-    } else if (chest_card == 4) {
-      players[[j]]$account <- players[[j]]$money + 50 # From sale of stock you get $50
-    } else if (chest_card == 5) {
-      players[[j]]$get_out_of_jail_free <- TRUE # Get Out of Jail Free
-    } else if (chest_card == 6) {
-      players[[j]]$jail <- TRUE # Go to Jail. Go directly to jail, do not pass Go, do not collect $200
-    } else if (chest_card == 7) {
-      players[[j]]$account <- players[[j]]$account + 100 # Holiday fund matures. Receive $100
-    } else if (chest_card == 8) {
-      players[[j]]$account <- players[[j]]$account + 20 # Income tax refund. Collect $20
-    } else if (chest_card == 9) {
-      players[[j]]$account <- players[[j]]$account + 10 * 3 # It is your birthday. Collect $10 from every player
-        for (k in 1:4) {
-          if (k != j) {
-            players[[k]]$account <- players[[k]]$account - 10
-        }
-      }
-    } else if (chest_card == 10) {
-      players[[j]]$account <- players[[j]]$account + 100 # Life insurance matures. Collect $100
-    } else if (chest_card == 11) {
-      players[[j]]$account <- players[[j]]$account - 100 # Pay hospital fees of $100
-      free_parking_fund <- free_parking_fund + 100
-    } else if (chest_card == 12) {
-      players[[j]]$account <- players[[j]]$account - 50 # Pay school fees of $50
-      free_parking_fund <- free_parking_fund + 50
-    } else if (chest_card == 13) {
-      players[[j]]$account <- players[[j]]$account - 25 # Receive $25 consultancy fee
-      free_parking_fund <- free_parking_fund + 25
-    } else if (chest_card == 14) {
-      players[[j]]$account <- players[[j]]$account + 10 # You have won second prize in a beauty contest. Collect $10
-    } else if (chest_card == 15) {
-      players[[j]]$account <- players[[j]]$account + 100 # You inherit $100
-    }
-      # Card 16 is paying for houses and hotels -- doesn't apply here
-}
-
-free_parking_fund <- 0
-
-free_parking <- function(){
-  if (players[[j]]$location == 20) {  # Free Parking position
-  players[[j]]$account <- players[[j]]$account + free_parking_fund
-  free_parking_fund <- 0  # Reset the fund
-  }
-}
-```
-### Chance function
-```{r}
-chance <- function() {
-  card <- sample(1:16, 1)
-  old_location <- players[[j]]$location
-  new_location <- players[[j]]$location
-   if (card == 1) {
-    players[[j]]$location <- 40 # Advance to Boardwalk
-    new_location <- players[[j]]$location
-  } else if (card == 2) {
-    players[[j]]$location <- 1 # Advance to Go
-    new_location <- players[[j]]$location
-  } else if (card == 3) {
-    players[[j]]$location <- 25 # Advance to Illinois Ave
-    new_location <- players[[j]]$location
-  } else if (card == 4) {
-    players[[j]]$location <- 12 # Advance to St. Charles Place
-    new_location <- players[[j]]$location
-  } else if (card == 5 || card == 6) { # Advance to the nearest railroad
-    if (players[[j]]$location == 37) {
-      players[[j]]$location <- 6 # Advance to Reading Railroad
-      new_location <- players[[j]]$location
-    } else if (players[[j]]$location == 8) {
-      players[[j]]$location <- 16 # Advance to Pennsylvania Railroad
-      new_location <- players[[j]]$location
-    } else if (players[[j]]$location == 23) {
-      players[[j]]$location <- 26 # Advance to B&O Railroad
-      new_location <- players[[j]]$location
-    } 
-  } else if (card == 7) { # Advance to the nearest utility
-    if (players[[j]]$location == 8 || players[[j]]$location == 37) {
-      players[[j]]$location <- 13 # Advance to Electric Company
-      new_location <- players[[j]]$location
-    } else if (players[[j]]$location == 23) {
-      players[[j]]$location <- 29 # Advance to Water Works
-      new_location <- players[[j]]$location
-    }
-  } else if (card == 8) {
-    players[[j]]$location <- players[[j]]$location - 3 # Move backwards 3 places
-    if (players[[j]]$location == 1) {
-        players[[j]]$account <- players[[j]]$account + 200 # If landed on GO collect $200
-      }
-    new_location <- players[[j]]$location
-  } else if (card == 9) {
-    players[[j]]$location <- 11 # Go to jail
-    players[[j]]$jail <- TRUE
-    new_location <- players[[j]]$location
-  } else if (card == 10) {
-    players[[j]]$location <- 6 # Advance to Reading Railroad
-    new_location <- players[[j]]$location
-  } 
-
-  if (new_location < old_location && card %in% c(1, 3:7, 10)) {
-    players[[j]]$account <- players[[j]]$account + 200 # Passing Go for cards 1, 3-7, and 10
-  }
-  
-    else if (card == 11) {
-      players[[j]]$account <- players[[j]]$account + 50 # Bank pays you $50
-    }
-    else if (card == 12) {
-      players[[j]]$get_out_of_jail_free == TRUE # Get out of jail free card
-    }
-    else if (card == 13) {
-      players[[j]]$account <- players[[j]]$account - 15 # Speeding fine $15
-      free_parking_fund <- free_parking_fund + 15
-    }
-    else if (card == 14) {
-      players[[j]]$account <- players[[j]]$account - 50 * 3
-        for (k in 1:4) {
-          if (k != j) {
-            players[[k]]$account <- players[[k]]$account + 50 # Elected Chairman of the Board; pay each player $50
-          }
-        }
-    }
-    else if (card == 15) {
-      players[[j]]$account <- players[[j]]$account + 150 # Building loan matures; collect $150
-      
-      # Card 16 is paying for houses and hotels -- doesn't apply here
-    }
-}
-```
-
-### Chance function - Lucy
-```{r}
-chance <- function() {
-  card <- sample(1:16, 1)
-  if (card == 1) {
-    players[[j]]$location <- 40 # Advance to Boardwalk
-  } else if (card == 2) {
-    players[[j]]$location <- 1 # Advance to Go
-    players[[j]]$account <- players[[j]]$account + 200
-  } else if (card == 3) {
-    players[[j]]$location <- 25 # Advance to Illinois Ave
-    if (players[[j]]$location == 37) {
-      players[[j]]$account <- players[[j]]$account + 200
-    }
-  } else if (card == 4) {
-    players[[j]]$location <- 12 # Advance to St. Charles Place
-    if (players[[j]]$location != 8) {
-      players[[j]]$account <- players[[j]]$account + 200
-    }
-  } else if (card == 5 || card == 6) { # Advance to the nearest railroad
-    if (players[[j]]$location == 37) {
-      players[[j]]$location <- 6 # Advance to Reading Railroad
-      players[[j]]$account <- players[[j]]$account + 200
-    } else if (players[[j]]$location == 8) {
-      players[[j]]$location <- 16 # Advance to Pennsylvania Railroad
-    } else if (players[[j]]$location == 23) {
-      players[[j]]$location <- 26 # Advance to B&O Railroad
-    } 
-  } else if (card == 7) { # Advance to the nearest utility
-    if (players[[j]]$location == 8 || players[[j]]$location == 37) {
-      players[[j]]$location <- 13 # Advance to Electric Company
-      if (players[[j]]$location == 37) {
-      players[[j]]$account <- players[[j]]$account + 200
-    }
-    } else if (players[[j]]$location == 23) {
-      players[[j]]$location <- 29 # Advance to Water Works
-    }
-  } else if (card == 8) {
-    players[[j]]$location <- players[[j]]$location - 3 # Move backwards 3 places
-  } else if (card == 9) {
-    players[[j]]$location <- 11 # Go to jail
-    players[[j]]$jail <- TRUE
-  } else if (card == 10) {
-    players[[j]]$location <- 6 # Advance to Reading Railroad
-    players[[j]]$account <- players[[j]]$account + 200
-  } else if (card == 11) { # Bank pays you $50
-    players[[j]]$account <- players[[j]]$account + 50
-  } else if (card == 12) { # Get out of jail free
-    players[[j]]$get_out_of_jail_free = TRUE
-  } else if (card == 13) { # Speeding fine
-    players[[j]]$account <- players[[j]]$account - 15
-  } else if (card == 14) { # Elected chairman
-    players[[j]]$account <- players[[j]]$account + 150
-    for (k in 1:4) {
-      if (players[[j]] != players[[k]]) {
-        players[[k]]$account <- players[[k]]$account - 50
-      }
-    }
-  } else if (card == 15) { # Building loan matures
-    players[[j]]$account <- players[[j]]$account + 150
-  }
-}
-```
-
-### Divide up properties
-```{r}
-#This function will divide all the properties between the four players
-#Input: properties vector
-#Return: Four equal groups of randomly shuffled elements from the properties vector
-
-divide_properties <- function(x) {
-  shuffled <- sample(x) #randomly shuffles all the elements of the properties vector
-  n <- length(shuffled) #length of shuffled vector
-  indices <- rep(1:4, times = 7) #creates a vector that contains a repeating sequence from 1 to 4 that is 28 elements long
-  result <- split(shuffled, indices) #splits shuffled vector into four groups
-}
-```
-
-### Function determines ownership of a property when it is landed on
-```{r}
-#This function will determine the ownership of a property when it is landed on
-ownership <- function(x) {
-  for (p in players) {
-    for (i in 1:7) {
-      if (x == players[[p]]$owned_properties[i]) {
-        if (p == players[[p]]$ID) {
-          return(NULL)
-        } else {
-          return(players[[p]])
-        }
-      }
-    }
-  }
-}
-```
-
-### Determines rent for railroads and utilities
-```{r}
-#This function will calculate fees owed on special properties (railroads and utilities)
-#Input: a vector of integers with each integer corresponding to a property on the board
-#Return: a vector of fees owed
-special_ownership <- function(x) {
-  rail_count <- 0 #initialize number of railroad properties held to zero
-  util_count <- 0 #initialize number of utility properties held to zero
-  for (i in 1:7) {
-    #check if property is a railroad (positions 6, 16, 26 and 36)
-    if (x[i] == 6 || x[i] == 16 || x[i] == 26 || x[i] == 36) {
-      rail_count <- rail_count + 1 #add one to railroad count vector
-    #check if property is a utility (positions 13 and 29)
-    } else if (x[i] == 13 || x[i] == 29) {
-      util_count = util_count + 1 #add one to utility count vector
-    }
-  }
-  
-  fees <- c() #this vector will hold the fee values
-
-  #determine fee owed based on number railroad cards owned 
-  if (rail_count == 0) {
-    fees <- append(fees, 0) #add 0 to fees vector
-  } else if (rail_count == 1) {
-    fees <- append(fees, 25) #add 25 to fees vector
-  } else if (rail_count == 2) {
-    fees <- append(fees, 50) #add 50 to fees vector
-  } else {
-    fees <- append(fees, 100) #add 100 to fees vector
-  }
-
-  #determine fee owed based on number utility cards owned 
-  if (util_count == 0) {
-    fees <- append(fees, 0) #add 0 to fees vector
-  } else if (util_count == 1) {
-    fees <- append(fees, 4) #add 4 to fees vector
-  } else {
-    fees <- append(fees, 10) #add 10 to fees vector
-  } 
-  
-  return(fees) #vector of fees owed
-}
-```
-
-### Function to collect/pay rent and get money for passing go
-```{r}
-#This function facilitates rent transactions between players
-#Input: a numeric value that corresponds to a position on the board that the player has moved to
-#Return: modifies player accounts in the player list
-rent <- function(x) {
-  if (x == 1) { # Go position
-    players[[j]]$account = players[[j]]$account + 200 #player money +200
-  } else if (x == 5) { # Income tax position
-    players[[j]]$account = players[[j]]$account - 200 #player money -200
-  } else if (x == 39) { # Luxury tax position
-    players[[j]]$account = players[[j]]$account - 100
-  }
-  
-  owner <- ownership(x)
-  if (owner$in_game == TRUE) {
-    if (x == 2) { # Mediterranean Ave
-      players[[j]]$account = players[[j]]$account - 2
-      owner$account = owner$account + 2
-    } else if (x == 4) { # Baltic Ave
-      players[[j]]$account = players[[j]]$account - 4
-      owner$account = owner$account + 4
-    } else if (x == 6 || x == 16 || x == 26 || x == 36) { # Railroads
-      special_fees <- owner$rails_and_utils
-      players[[j]]$account = players[[j]]$account - special_fees[1]
-      owner$account = owner$account + special_fees[1]
-    } else if (x == 7) { # Oriental Ave
-      players[[j]]$account = players[[j]]$account - 6
-      owner$account = owner$account + 6
-    } else if (x == 9) { # Vermont Ave
-      players[[j]]$account = players[[j]]$account - 6
-      owner$account = owner$account + 6
-    } else if (x == 10) { # Connecticut Ave
-      players[[j]]$account = players[[j]]$account - 8
-      owner$account = owner$account + 8
-    } else if (x == 12) { # St. Charles Place
-      players[[j]]$account = players[[j]]$account - 10
-      owner$account = owner$account + 10
-    } else if (x == 13 || x == 29) { # Utilities
-      special_fees <- owner$rails_and_utils
-      players[[j]]$account = players[[j]]$account - special_fees[2]
-      owner$account = owner$account + special_fees[2]
-    } else if (x == 14) { # States Ave
-      players[[j]]$account = players[[j]]$account - 10
-      owner$account = owner$account + 10
-    } else if (x == 15) { # Virginia Ave
-      players[[j]]$account = players[[j]]$account - 12
-      owner$account = owner$account + 12
-    } else if (x == 17) { # St. James Place
-      players[[j]]$account = players[[j]]$account - 14
-      owner$account = owner$account + 14
-    } else if (x == 19) { # Tennessee Ave
-      players[[j]]$account = players[[j]]$account - 14
-      owner$account = owner$account + 14
-    } else if (x == 20) { # New York Ave
-      players[[j]]$account = players[[j]]$account - 16
-      owner$account = owner$account + 16
-    } else if (x == 22) { # Kentucky Ave
-      players[[j]]$account = players[[j]]$account - 18
-      owner$account = owner$account + 18
-    } else if (x == 24) { # Indiana Ave
-      players[[j]]$account = players[[j]]$account - 18
-      owner$account = owner$account + 18
-    } else if (x == 25) { # Illinois Ave
-      players[[j]]$account = players[[j]]$account - 20
-      owner$account = owner$account + 20
-    } else if (x == 27) { # Atlantic Ave
-      players[[j]]$account = players[[j]]$account - 22
-      owner$account = owner$account + 22
-    } else if (x == 28) { # Vetnor Ave
-      players[[j]]$account = players[[j]]$account - 22
-      owner$account = owner$account + 22
-    } else if (x == 30) { # Marvin Gardens
-      players[[j]]$account = players[[j]]$account - 24
-      owner$account = owner$account + 24
-    } else if (x == 32) { # Pacific Ave
-      players[[j]]$account = players[[j]]$account - 26
-      owner$account = owner$account + 26
-    } else if (x == 33) { # North Carolina Ave
-      players[[j]]$account = players[[j]]$account - 26
-      owner$account = owner$account + 26
-    } else if (x == 35) { # Pennsylvania Ave
-      players[[j]]$account = players[[j]]$account - 28
-      owner$account = owner$account + 28
-    } else if (x == 38) { # Park Place
-      players[[j]]$account = players[[j]]$account - 35
-      owner$account = owner$account + 35
-    } else if (x == 40) { # Boardwalk
-      players[[j]]$account = players[[j]]$account - 50
-      owner$account = owner$account + 50
-    }
-  }
-}
-```
-
-### INCOMPLETE!!!!! Full simulation of a game
-```{r}
-properties <- c(2, 4, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 38, 40)
-
-# Randomly give each player 7 properties
-property_groups <- divide_properties(properties)
-
-# Add location of properties to players owned properties vector
-players <- list(
-  player1 <- list(
-    ID = 1,
-    location = 0,
-    double_rolls = 0,
-    jail = FALSE,
-    jail_rolls = 0,
-    account = 1500,
-    owned_properties <- property_groups[1],
-    rails_and_utils <- special_ownership(unlist(owned_properties)),
-    get_out_of_jail_free = FALSE,
-    in_game = TRUE),
-  player2 <- list(
-    ID = 2,
-    location = 0,
-    double_rolls = 0,
-    jail = FALSE,
-    jail_rolls = 0,
-    account = 1500,
-    owned_properties <- property_groups[2],
-    rails_and_utils <- special_ownership(unlist(owned_properties)),
-    get_out_of_jail_free = FALSE,
-    in_game = TRUE),
-  player3 <- list(
-    ID = 3,
-    location = 0,
-    double_rolls = 0,
-    jail = FALSE,
-    jail_rolls = 0,
-    account = 1500,
-    owned_properties <- property_groups[3],
-    rails_and_utils <- special_ownership(unlist(owned_properties)),
-    get_out_of_jail_free = FALSE,
-    in_game = TRUE),
-  player4 <- list(
-    ID = 4,
-    location = 0,
-    double_rolls = 0,
-    jail = FALSE,
-    jail_rolls = 0,
-    account = 1500,
-    owned_properties <- property_groups[4],
-    rails_and_utils <- special_ownership(unlist(owned_properties)),
-    get_out_of_jail_free = FALSE,
-    in_game = TRUE)
-  )
-
-# Make attribute to know how many players are still in
-players_in <- 4
-# Make attribute to count the number of turns taken
-total_turns <- 0
-
-while (players_in > 1) {
-  # Add rent function to this whole thing
-  for (j in 1:4) {
-    if (players[[j]]$in_game == TRUE) {
-      if (players[[j]]$jail == TRUE & players[[j]]$get_out_of_jail_free == FALSE) {
-        d1 = dice_1()
-        d2 = dice_2()
-        jail_rolls <- jail_rolls + 1
-        
-        if (d1 == d2 || players[[j]]$jail_rolls == 3) {
-          jail = FALSE
-          players[[j]]$jail_rolls <- 0
-          dice_total <- dice_1() + dice_2()
-          players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
-          if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
-            chance()
-          }
-          # Add community chest
-          if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
-            chest()
-          }
-          # Pay rent
-          rent(players[[j]]$location)
-        }
-        total_turns = total_turns + 1
-        
-      } else {
-        if (players[[j]]$jail == TRUE & players[[j]]$get_out_of_jail_free == TRUE) {
-          players[[j]]$jail == FALSE
-          players[[j]]$get_out_of_jail_free == FALSE
-        }
-        d1 = dice_1()
-        d2 = dice_2()
-        dice_total <- dice_1() + dice_2()
-        players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
-        if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
-            chance()
-        }
-        if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
-            chest()
-          }
-          # Pay rent
-          rent(players[[j]]$location)
-      }
-        
-      if (players[[j]]$location == 31) {
-        players[[j]]$location <- 11
-        jail = TRUE
-      } else if (d1 == d2) {
-        players[[j]]$double_rolls = players[[j]]$double_rolls + 1
-      }
-        
-      while (players[[j]]$double_rolls > 0 & players[[j]]$double_rolls < 3) {
-        d1 = dice_1()
-        d2 = dice_2()
-        dice_total <- dice_1() + dice_2()
-        players[[j]]$location <- (players[[j]]$location + dice_total) %% 41
-        if (players[[j]]$location == 8 || players[[j]]$location == 23 || players[[j]]$location == 37) {
-          chance()
-        }
-        # Add community chest
-        if (players[[j]]$location == 3 || players[[j]]$location == 18 || players[[j]]$location == 34) {
-          chest()
-        }
-        # Pay rent
-        rent(players[[j]]$location)
-      }
+      # Pay rent if the property is owner by another player and they are still in
+      for (owner_id in 1:4) {
+        if (owner_id != j && players[[owner_id]]$active && 
+            loc %in% players[[owner_id]]$owned) {
+          rent_index <- which(players[[owner_id]]$owned == loc)
+          rent <- players[[owner_id]]$rents[rent_index]
           
-      if (d1 == d2) {
-        players[[j]]$double_rolls = players[[j]]$double_rolls + 1
+          players[[j]]$account <- players[[j]]$account - rent
+          players[[owner_id]]$account <- players[[owner_id]]$account + rent
+          
+          # Remove bankrupt players
+          if (players[[j]]$account < 0) {
+            players[[j]]$active <- FALSE
+            active_player_count <- active_player_count - 1
+            break
+          }
+          break
+        }
       }
-      
-      if (players[[j]]$double_rolls == 3) {
-        players[[j]]$location <- 11
-        jail = TRUE
-      }
-      
-      if (players[[j]]$account < 0) {
-        players[[j]]$in_game = FALSE
-        players_in = players_in - 1
-      }
-      
-      total_turns = total_turns + 1
     }
   }
 }
-
 ```
 
+# Function to average the number of rounds played over 10 games whose number of total rounds are sensible
 ```{r}
-get_active_players <- function(players) {
-  return(which(sapply(players, function(p) p$in_game)))
-}
-
-turn_counter <- 0 # put before game loop 
-
-turn_counter <- turn_counter + 1 # put inside the for (j in 1:4) loop, after each player's turn
-
-# At end of game loop, after while loop finishes 
-remaining_players <- get_active_players(players)
-
-if (length(remaining_players) == 1) {
-  winner <- players[[remaining_players]]
+run_simulation <- function() {
+  successful_games <- 0
+  total_rounds <- 0
+  max_attempts <- 1000
+  attempt_count <- 0
   
-  cat("\n GAME OVER! \n")
-  cat("---------------------\n")
-  cat("Winner Player ID:", winner$ID, "\n")
-  cat("Number of Turns:", turn_counter, "\n")
-  cat("Final Money Amount:", winner$account, "\n")
-  cat("---------------------\n")
+  while (successful_games < 10 && attempt_count < max_attempts) {
+    attempt_count <- attempt_count + 1
+    
+    game_result <- play_game(use_free_parking_rule = TRUE)
+    
+    if (game_result < 1000) { # Only count games with sensible results
+      successful_games <- successful_games + 1
+      total_rounds <- total_rounds + game_result
+    }
+  }
+  
+  if (successful_games == 0) {
+    return(NA)  # No valid games were completed
+  } else {
+    average_rounds <- total_rounds / successful_games
+    cat(sprintf("\nAverage rounds across %d valid games: %.1f\n", 
+                successful_games, average_rounds))
+    return(average_rounds)
+  }
 }
+
+# Run the simulation
+average_result <- run_simulation()
 ```
